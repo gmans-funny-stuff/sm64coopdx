@@ -885,7 +885,6 @@ ifeq ($(WINDOWS_BUILD),1)
   ifeq ($(CROSS),)
     LDFLAGS += -no-pie
   endif
-  LDFLAGS += -T windows.ld
 else ifeq ($(TARGET_RPI),1)
   LDFLAGS := $(OPT_FLAGS) -lm $(BACKEND_LDFLAGS) -no-pie
 else ifeq ($(TARGET_RK3588),1)
@@ -1009,7 +1008,7 @@ else
   endif
 endif
 
-IS_DEV_OR_DEBUG := $(or $(filter 1,$(DEVELOPMENT)),$(filter 1,$(DEBUG)),0)
+IS_DEV_OR_DEBUG := $(or $(filter 1,$(DEVELOPMENT)),$(filter 1,$(DEBUG)))
 ifeq ($(IS_DEV_OR_DEBUG),0)
   CFLAGS += -fno-ident -fno-common -ffile-prefix-map="$(PWD)"=. -D__DATE__="\"\"" -D__TIME__="\"\"" -Wno-builtin-macro-redefined
   ifeq ($(OSX_BUILD),0)
@@ -1179,15 +1178,8 @@ endef
 all: $(EXE)
 
 ifeq ($(WINDOWS_BUILD),1)
-MAPFILE = $(BUILD_DIR)/coop.map
 exemap: $(EXE)
-	@$(PRINT) "$(GREEN)Creating map file: $(BLUE)$(MAPFILE) $(NO_COL)\n"
-	$(V)$(OBJDUMP) -t $(EXE) > $(MAPFILE)
-	@cp $(EXE) $(EXE).bak && cp $(MAPFILE) $(MAPFILE).bak
-	$(V)$(PYTHON) $(TOOLS_DIR)/clean_mapfile.py $(EXE) $(MAPFILE)
-ifeq ($(IS_DEV_OR_DEBUG),0)
-	$(V)$(OBJCOPY) -p --strip-unneeded $(EXE)
-endif
+	$(V)$(OBJDUMP) -t $(EXE) > $(BUILD_DIR)/coop.map
 all: exemap
 endif
 
